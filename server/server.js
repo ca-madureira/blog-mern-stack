@@ -27,6 +27,17 @@ mongoose.connect(process.env.DB_LOCATION, {
   autoIndex: true,
 });
 
+const generateUploadURL = async()=>{
+  const date = new Date()
+  const imageName =`${nanoid()}-${date.getTime()}.jpeg`;
+  return await s3.getSignedUrlPromise("putObject", {
+    Bucket : '',
+    Key: imageName,
+    Expires: 1000,
+    ContentType: "image/jpeg"
+  })
+}
+
 const formatDatatoSend = (user) => {
   const access_token = jwt.sign(
     { id: user._id },
@@ -50,6 +61,13 @@ const generateUsername = async (email) => {
   usernameExists ? (username += nanoid().substring(0, 5)) : "";
   return username;
 };
+
+
+server.get("/get-upload-url",(req, res)=>{
+  generateUploadURL().then(url => res.status(200).json({uploadURL: url})).catch(err=>{
+    return res.status(500).json({error:err.message})
+  })
+})
 server.post("/signup", (req, res) => {
   let { fullname, email, password } = req.body;
 
@@ -92,6 +110,7 @@ server.post("/signup", (req, res) => {
       });
   });
 });
+
 
 server.post("/signin", (req, res) => {
   let { email, password } = req.body;
