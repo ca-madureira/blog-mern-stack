@@ -16,10 +16,11 @@ const App = () => {
   return (
     <UserContext.Provider value={{ userAuth, setUserAuth }}>
       <Routes>
-        <Route path="/editor" element={<Editor />}/>
+        <Route path='/editor' element={<Editor />} />
         <Route path='/' element={<Navbar />}>
-          <Route path='signin' element={<h1>Sign in page</h1>} />
-          <Route path='signup' element={<h1>sign up</h1>} />
+          <Route index element={<HomePage />} />
+          <Route path='signin' element={<UserAuthForm type='sign-in' />} />
+          <Route path='signup' element={<UserAuthForm type='sign-up' />} />
         </Route>
       </Routes>
     </UserContext.Provider>
