@@ -22,6 +22,7 @@ const BlogEditor = () => {
   let {
     userAuth: { access_token },
   } = useContext(UserContext);
+  let { blog_id } = useParams();
 
   let navigate = useNavigate();
 
@@ -30,7 +31,7 @@ const BlogEditor = () => {
       setTextEditor(
         new EditorJS({
           holderId: "textEditor",
-          data: content,
+          data: Array.isArray(content) ? content[0] : content,
           tools: tools,
           placeholder: "let's write an awesome story",
         })
@@ -132,11 +133,15 @@ const BlogEditor = () => {
           draft: true,
         };
         axios
-          .post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog", blogObj, {
-            headers: {
-              Authorization: `Bearer ${access_token}`,
-            },
-          })
+          .post(
+            import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",
+            { ...blogObj, id: blog_id },
+            {
+              headers: {
+                Authorization: `Bearer ${access_token}`,
+              },
+            }
+          )
           .then(() => {
             e.target.classList.remove("disable");
 
