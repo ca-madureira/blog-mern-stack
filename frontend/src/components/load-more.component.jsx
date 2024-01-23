@@ -7,7 +7,7 @@ const LoadMoreDataBtn = ({ state, fetchDataFun, additionalParam }) => {
         }
         className='text-dark-grey p-2 px-3 hover:bg-grey/50 rounded-md flex items-center gap-2'
       >
-        Load more
+        Carregar mais
       </button>
     );
   }

@@ -24,6 +24,7 @@ export const profileDataStructure = {
   social_links: {},
   joinedAt: "",
 };
+
 const ProfilePage = () => {
   let { id: profileId } = useParams();
 

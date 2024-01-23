@@ -44,16 +44,17 @@ const BlogEditor = () => {
       );
     }
   });
+
   const handleBannerUpload = (e) => {
     let img = e.target.files[0];
 
     if (img) {
-      let loadingToast = toast.loading("Uploading...");
+      let loadingToast = toast.loading("Carregando...");
       uploadImage(img)
         .then((url) => {
           if (url) {
             toast.dismiss(loadingToast);
-            toast.success("Upload");
+            toast.success("Carregado");
             // blogBannerRef.current.src = url;
 
             setBlog({ ...blog, banner: url });
@@ -65,6 +66,7 @@ const BlogEditor = () => {
         });
     }
   };
+
   const handleTitleKeyDown = (e) => {
     if (e.keyCode == 13) {
       e.preventDefault();

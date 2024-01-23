@@ -18,9 +18,9 @@ const server = express();
 let PORT = 3000;
 
 cloudinary.config({
-  cloud_name: "dsrwye3fj",
-  api_key: "384851291493582",
-  api_secret: "xk-q52PFaKZY6GF5MZzY_Z56rPs",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 admin.initializeApp({
@@ -41,7 +41,7 @@ mongoose.connect(process.env.DB_LOCATION, {
 const generateUploadURL = async () => {
   const imageName = `${nanoid()}.jpeg`;
   const uploadOptions = {
-    folder: "seu-diretorio-no-cloudinary", // Opcional: se você quiser organizar as imagens em pastas
+    folder: "images", // Opcional: se você quiser organizar as imagens em pastas
     public_id: imageName,
     eager: [{ width: 400, height: 300, crop: "pad" }], // Opcional: transformações de imagem a serem aplicadas
     tags: ["imagem"], // Opcional: tags para organização
@@ -428,6 +428,66 @@ server.post("/get-profile", (req, res) => {
       return res.status(200).json(user);
     })
     .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+server.post("/update-profile", verifyJWT, (req, res) => {
+  let { username, bio, social_links } = req.body;
+
+  let bioLimit = 150;
+
+  if (username.length < 3) {
+    return res
+      .status(403)
+      .json({ error: "username deve conter ao menos 3 caracteres" });
+  }
+
+  if (bio.length > bioLimit) {
+    return res
+      .status(403)
+      .json({ error: `Bio nao deve conter mais que ${bioLimit} caracteres` });
+  }
+
+  let socialLinksArr = Object.keys(social_links);
+
+  try {
+    for (let i = 0; i < socialLinksArr.length; i++) {
+      if (social_links[socialLinksArr[i]].length) {
+        let hostname = new URL(social_links[socialLinksArr[i]]).hostname;
+
+        if (
+          !hostname.includes(`${socialLinksArr[i]}.com`) &&
+          socialLinksArr[i] != "website"
+        ) {
+          return res.status(403).json({
+            error: `${socialLinksArr[i]} link is invalid.you must enter a full`,
+          });
+        }
+      }
+    }
+  } catch (err) {
+    return res.status(500).json({
+      error: " you must provide full social links with http(s) included",
+    });
+  }
+
+  let UpdateObj = {
+    "personal_info.username": username,
+    "personal_info.bio": bio,
+    social_links,
+  };
+
+  User.findOneAndUpdate({ _id: req.user }, UpdateObj, {
+    runValidators: true,
+  })
+    .then(() => {
+      return res.status(200).json({ username });
+    })
+    .catch((err) => {
+      if (err.code == 11000) {
+        return res.status(409).json({ error: "username is already taken" });
+      }
       return res.status(500).json({ error: err.message });
     });
 });

@@ -3,6 +3,7 @@ import AnimationWrapper from "../common/page-animation";
 import InputBox from "../components/input.component";
 import { useRef, useContext } from "react";
 import { toast, Toaster } from "react-hot-toast";
+import axios from "axios";
 
 const ChangePassword = () => {
   let {
@@ -10,6 +11,7 @@ const ChangePassword = () => {
   } = useContext(UserContext);
 
   let changePasswordForm = useRef();
+  let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 
   const handleSubmit = (e) => {
     e.preventDefault();

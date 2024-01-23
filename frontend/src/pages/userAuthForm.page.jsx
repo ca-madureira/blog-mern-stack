@@ -1,10 +1,11 @@
+import { useContext, useRef } from "react";
 import axios from "axios";
 import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
 import { Link, Navigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
 import { UserContext } from "../App";
-import { useContext, useRef } from "react";
+
 import { storeInSession } from "../common/session";
 import { authWithGoogle } from "../common/firebase";
 import AnimationWrapper from "../common/page-animation";
@@ -31,19 +32,10 @@ const UserAuthForm = ({ type }) => {
   const authForm = useRef();
 
   const handleSubmit = (e) => {
+    e.preventDefault();
+
     let serverRoute = type == "sign-in" ? "/signin" : "/signup";
 
-    // let form = new FormData(formElement);
-    // let formData = {};
-
-    // for (let [key, value] of form.entries()) {
-    //   formData[key] = value;
-    // }
-
-    // let { fullname, email, password } = formData;
-
-    // userAuthThroughServer(serverRoute, formData);
-    e.preventDefault();
     let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     let passwordRegex = /^(?=.*\d)(?=.*[a-z]).{6,20}$/;
 

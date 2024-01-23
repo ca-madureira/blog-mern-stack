@@ -14,7 +14,7 @@ const SideNav = () => {
 
   let activeTabLine = useRef();
   let sideBarIconTab = useRef();
-  let pageStateTab = useRef();
+  let pageStateTab = useRef(null);
 
   const changePageState = (e) => {
     let { offsetWidth, offsetLeft } = e.target;
@@ -31,7 +31,9 @@ const SideNav = () => {
 
   useEffect(() => {
     setShowSideNav(false);
-    pageStateTab.current.click();
+    if (pageStateTab.current) {
+      pageStateTab.current.click();
+    }
   }, [pageState]);
 
   return access_token == null ? (

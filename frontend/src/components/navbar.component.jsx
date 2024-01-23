@@ -60,6 +60,12 @@ const Navbar = () => {
 
   const changeTheme = () => {
     const newTheme = theme == "light" ? "dark" : "light";
+
+    setTheme(newTheme);
+
+    document.body.setAttribute("data-theme", newTheme);
+
+    storeInSession("theme", newTheme);
   };
 
   return (
@@ -110,8 +116,8 @@ const Navbar = () => {
             <i
               className={
                 "fi fi-rr-" +
-                (theme == "light" ? "moon-stars" : "sun") +
-                "text-2xl block mt-1"
+                (theme === "light" ? "moon-stars" : "sun") +
+                " text-2xl block mt-1"
               }
             ></i>
           </button>

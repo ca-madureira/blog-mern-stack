@@ -20,6 +20,7 @@ const EditProfile = () => {
   let bioLimit = 150;
 
   let profileImgEle = useRef();
+  let editProfileForm = useRef();
 
   const [profile, setProfile] = useState(profileDataStructure);
   const [loading, setLoading] = useState(true);
@@ -111,12 +112,83 @@ const EditProfile = () => {
     }
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    let form = new FormData(editProfileForm.current);
+    let formData = {};
+
+    for (let [key, value] of form.entries()) {
+      formData[key] = value;
+    }
+
+    let {
+      username,
+      bio,
+      youtube,
+      facebook,
+      twitter,
+      github,
+      instagram,
+      website,
+    } = formData;
+
+    if (username.length < 3) {
+      return toast.error("username precisa ter ao menos 3 letras");
+    }
+    if (bio.length > bioLimit) {
+      return toast.error(`Bio não deve conter mais que ${bioLimit}`);
+    }
+
+    let loadingToast = toast.loading("Carregando...");
+
+    e.target.setAttribute("disabled", true);
+
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/update-profile",
+        {
+          username,
+          bio,
+          social_links: {
+            youtube,
+            facebook,
+            twitter,
+            github,
+            instagram,
+            website,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        }
+      )
+      .then(({ data }) => {
+        if (userAuth.username != data.username) {
+          let newUserAuth = { ...userAuth, username: data.username };
+
+          storeInSession("user", JSON.stringify(newUserAuth));
+          setUserAuth(newUserAuth);
+        }
+        toast.dismiss(loadingToast);
+        e.target.removeAttribute("disabled");
+        toast.success("Perfil atualizado");
+      })
+      .catch(({ response }) => {
+        toast.dismiss(loadingToast);
+        e.target.removeAttribute("disabled");
+        toast.error(response.data.error);
+      });
+  };
+
   return (
     <AnimationWrapper>
       {loading ? (
         <Loader />
       ) : (
-        <form>
+        <form ref={editProfileForm} onSubmit={handleSubmit}>
           <Toaster />
           <h1 className='max-md:hidden '>Editar perfil</h1>
           <div className='flex flex-col lg:flex-row items-start py-10 gap-8 lg:gap-10'>

@@ -21,6 +21,7 @@ export const ThemeContext = createContext({});
 
 const darkThemePreference = () =>
   window.matchMedia("(prefers-color-scheme:dark)").matches;
+
 const App = () => {
   const [userAuth, setUserAuth] = useState({});
   const [theme, setTheme] = useState(() =>
