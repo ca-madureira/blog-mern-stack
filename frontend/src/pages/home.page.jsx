@@ -1,7 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import NoDataMessage from "../components/nodata.component";
 import AnimationWrapper from "../common/page-animation";
 import { activeTabRef } from "../components/inpage-navigation.component";
 import { filterPaginationData } from "../common/filter-pagination-data";
+import InPageNavigation from "../components/inpage-navigation.component";
+import Loader from "../components/loader.component";
+import LoadMoreDataBtn from "../components/load-more.component";
+
 const HomePage = () => {
   let [blogs, setBlogs] = useState(null);
   let [trendingBlogs, setTrendingBlogs] = useState(null);
@@ -16,6 +22,7 @@ const HomePage = () => {
     "financas",
     "viagens",
   ];
+
   const fetchLatestBlogs = (page = 1) => {
     axios
       .post(import.meta.env.VITE_SERVER_DOMAIN + "/latest-blogs", { page })
@@ -90,6 +97,7 @@ const HomePage = () => {
       fetchTrendingBlogs();
     }
   }, [pageState]);
+
   return (
     <AnimationWrapper>
       <section className='h-cover flex justify-center gap-10'>
@@ -116,8 +124,9 @@ const HomePage = () => {
                   );
                 })
               ) : (
-                <NoDataMessage message='No blogs published' />
+                <NoDataMessage message='Nenhum blog postado' />
               )}
+
               <LoadMoreDataBtn
                 state={blogs}
                 fetchDataFun={
@@ -138,15 +147,13 @@ const HomePage = () => {
                 );
               })
             ) : (
-              <NoDataMessage message='no trending published' />
+              <NoDataMessage message='nenhuma tendência publicada' />
             )}
           </InPageNavigation>
         </div>
         <div className='min-w-[40%] lg:min-w-[400px] max-w-min border-1 border-grey pl-8 pt-5 max-md:hidden'>
           <div className='flex flex-col gap-10'>
-            <h1 className='font-medium text-xl mb-8'>
-              Stories form all interest
-            </h1>
+            <h1 className='font-medium text-xl mb-8'>Assuntos em alta</h1>
             <div className='flex gap-3 flex-wrap'>
               {categories.map((category, i) => {
                 return (
@@ -168,7 +175,7 @@ const HomePage = () => {
             <h1 className='font-medium text-xl mb-8'>
               Trending<i className='fi fi-rr-arrow-trend-up'></i>
             </h1>
-            {trendingBlogs.map((blog, i) => {
+            {trendingBlogs?.map((blog, i) => {
               return (
                 <AnimationWrapper transition={{ duration: 1, delay: i * 0.1 }}>
                   <MinimalBlogPost blog={blog} index={i} />

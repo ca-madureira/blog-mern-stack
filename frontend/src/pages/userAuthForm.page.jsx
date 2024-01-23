@@ -1,10 +1,13 @@
+import axios from "axios";
 import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
 import { UserContext } from "../App";
+import { useContext, useRef } from "react";
 import { storeInSession } from "../common/session";
 import { authWithGoogle } from "../common/firebase";
+import AnimationWrapper from "../common/page-animation";
 
 const UserAuthForm = ({ type }) => {
   let {
@@ -13,23 +16,37 @@ const UserAuthForm = ({ type }) => {
   } = useContext(UserContext);
 
   const userAuthThroughServer = (serverRoute, formData) => {
+    console.log(formData);
     axios
       .post(import.meta.env.VITE_SERVER_DOMAIN + serverRoute, formData)
       .then(({ data }) => {
         storeInSession("user", JSON.stringify(data));
+        setUserAuth(data);
+        console.log(data);
       })
       .catch(({ response }) => {
         toast.error(response.data.error);
       });
   };
+  const authForm = useRef();
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-
     let serverRoute = type == "sign-in" ? "/signin" : "/signup";
 
-    let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?w+)*(\w{2,3})+$/;
+    // let form = new FormData(formElement);
+    // let formData = {};
+
+    // for (let [key, value] of form.entries()) {
+    //   formData[key] = value;
+    // }
+
+    // let { fullname, email, password } = formData;
+
+    // userAuthThroughServer(serverRoute, formData);
+    e.preventDefault();
+    let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     let passwordRegex = /^(?=.*\d)(?=.*[a-z]).{6,20}$/;
+
     let form = new FormData(formElement);
     let formData = {};
 
@@ -41,20 +58,18 @@ const UserAuthForm = ({ type }) => {
 
     if (fullname) {
       if (fullname.length < 3) {
-        return toast.error({
-          error: "fullname muste be at least 3 letters long",
-        });
+        return toast.error("Nome deve conter ao menos 3 caracteres");
       }
     }
 
     if (!email.length) {
-      return toast.error({ error: "enter email" });
+      return toast.error("Insira email");
     }
     if (!emailRegex.test(email)) {
-      return toast.error({ error: "email is invalid" });
+      return toast.error("email invalido");
     }
     if (!passwordRegex.test(password)) {
-      return toast.error({ error: "Password should be 6 to 20 characteres" });
+      return toast.error("senha deve conter de 6 a 20 caracteres");
     }
 
     userAuthThroughServer(serverRoute, formData);
@@ -71,10 +86,11 @@ const UserAuthForm = ({ type }) => {
         userAuthThroughServer(serverRoute, formData);
       })
       .catch((err) => {
-        toast.error("trouble login through google");
+        toast.error("erro ao fazer login");
         return console.log(err);
       });
   };
+
   return access_token ? (
     <Navigate to='/' />
   ) : (
@@ -84,13 +100,13 @@ const UserAuthForm = ({ type }) => {
         <Toaster />
         <form id='formElement' className='w-[80%] max-w-[400px]'>
           <h1 className='text-4xl font-gelasio capitalize text-center mb-24'>
-            {type == "sign-in" ? "welcome back" : "join us today"}
+            {type == "sign-in" ? "welcome back" : "Cadastro"}
           </h1>
           {type != "sign-in" ? (
             <InputBox
               name='fullname'
               type='text'
-              placeholder='full name'
+              placeholder='Nome Completo'
               icon='fi-rr-user'
             />
           ) : (
@@ -99,13 +115,13 @@ const UserAuthForm = ({ type }) => {
           <InputBox
             name='email'
             type='email'
-            placeholder='email'
+            placeholder='E-mail'
             icon='fi-rr-envelope'
           />
           <InputBox
             name='password'
             type='password'
-            placeholder='senha'
+            placeholder='Senha'
             icon='fi-rr-key'
           />
 
@@ -114,32 +130,32 @@ const UserAuthForm = ({ type }) => {
             type='submit'
             onClick={handleSubmit}
           >
-            {type.replace("-", "")}
+            {type == "sign-in" ? "Entrar" : "Cadastrar"}
           </button>
           <div className='relative w-full flex items-center gap-2 my-10 opacity-10 uppercase text-black font-bold'>
             <hr className='w-1/2 border-black' />
-            <p>or</p>
+            <p>ou</p>
             <hr className='w-1/2 border-black' />
           </div>
           <button
             className='btn-dark flex items-center justify-center gap-4 w-[90%] center'
             onClick={handleGoogleAuth}
           >
-            <img src={googleIcon} />
-            continue com google
+            <img className='h-8 w-8' src={googleIcon} />
+            Continue com Google
           </button>
           {type == "sign-in" ? (
             <p className='mt-6 text-dark-grey text-xl text-center'>
-              Dont have an account?
+              Não tem conta?
               <Link to='/signup' className='underline text-black text-xl ml-1'>
-                Join us
+                Cadastre-se
               </Link>
             </p>
           ) : (
             <p className='mt-6 text-dark-grey text-xl text-center'>
-              Already a member?
+              Já tem conta?
               <Link to='/signup' className='underline text-black text-xl ml-1'>
-                Sign in here
+                Entrar
               </Link>
             </p>
           )}

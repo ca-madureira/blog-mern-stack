@@ -5,6 +5,7 @@ import BlogEditor from "../components/blog-editor.component";
 import PublishForm from "../components/publish-form.component";
 import { createContext } from "react";
 import { useEffect } from "react";
+import PageNotFound from "./404.page";
 
 const blogStructure = {
   title: "",
@@ -58,7 +59,9 @@ const Editor = () => {
         setTextEditor,
       }}
     >
-      {access_token === null ? (
+      {!isAdmin ? (
+        <Navigate to='/404' />
+      ) : access_token === null ? (
         <Navigate to='/signin' />
       ) : loading ? (
         <Loader />

@@ -6,7 +6,7 @@ import Quote from "@editorjs/quote";
 import Marker from "@editorjs/marker";
 import InlineCode from "@editorjs/inline-code";
 
-import { uploadImage } from "../common/aws";
+import { uploadImage } from "../common/cloudinary";
 
 const uploadImageByFile = (e) => {
   return uploadImage(e).then((url) => {

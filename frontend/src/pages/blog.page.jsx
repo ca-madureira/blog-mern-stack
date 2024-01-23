@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, createContext } from "react";
 import AnimationWrapper from "../common/page-animation";
 import BlogInteraction from "../components/blog-interaction.component";
+import { fetchComments } from "../components/comments.component";
 
 export const blogStructure = {
   title: "",
@@ -21,6 +22,9 @@ const BlogPage = () => {
   const [blog, setBlog] = useState(blogStructure);
   const [similarBlogs, setSimilarBlogs] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isLikedByUser, setLikedByUser] = useState(false);
+  const [commentsWrapper, setCommentsWrapper] = useState(false);
+  const [totalParentCommentsLoader, setTotalParentCommentsLoaded] = useState(0);
 
   let {
     title,
@@ -35,7 +39,11 @@ const BlogPage = () => {
   const fetchBlog = () => {
     axios
       .post(import.meta.env.VITE_SERVER_DOMAIN + "get-blog", { blog_id })
-      .then(({ data: { blog } }) => {
+      .then(async ({ data: { blog } }) => {
+        blog.comments = await fetchComments({
+          blog_id: blog_id,
+          setParentCommentCountFun: setTotalParentCommentsLoaded,
+        });
         setBlog(blog);
         axios
           .post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", {
@@ -64,13 +72,28 @@ const BlogPage = () => {
     setBlog(blogStructure);
     setSimilarBlogs(null);
     setLoading(true);
+    setLikedByUser(false);
+    setCommentsWrapper(false);
+    setTotalParentCommentsLoaded(0);
   };
   return (
     <AnimationWrapper>
       {loading ? (
         <Loader />
       ) : (
-        <BlogContext.Provider value={{ blog, setBlog }}>
+        <BlogContext.Provider
+          value={{
+            blog,
+            setBlog,
+            isLikedByUser,
+            setLikedByUser,
+            commentsWrapper,
+            setCommentsWrapper,
+            totalParentCommentsLoader,
+            setTotalParentCommentsLoaded,
+          }}
+        >
+          <CommentsContainer />
           <div className='max-w-[900px] center py-10 max-lg:px-[5vw]'>
             <img src={banner} className='aspect-video' />
             <div className='mt-12'>
