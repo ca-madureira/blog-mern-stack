@@ -32,21 +32,30 @@ export const fetchComments = async ({
 };
 
 const CommentsContainer = () => {
-  let {
-    blog,
+  // let {
+  //   blog,
 
+  //   blog: {
+  //     _id,
+  //     title,
+  //     // comments: { results: commentsArr },
+  //     // activity: { total_parent_comments },
+  //   },
+
+  //   commentsWrapper,
+  //   setCommentsWrapper,
+  //   totalParentCommentsLoaded,
+  //   setTotalParentCommentsLoaded,
+  //   setBlog,
+  // } = useContext(BlogContext);
+
+  let {
     blog: {
-      _id,
       title,
       // comments: { results: commentsArr },
-      // activity: { total_parent_comments },
     },
-
     commentsWrapper,
     setCommentsWrapper,
-    totalParentCommentsLoaded,
-    setTotalParentCommentsLoaded,
-    setBlog,
   } = useContext(BlogContext);
 
   const loadMoreComments = async () => {

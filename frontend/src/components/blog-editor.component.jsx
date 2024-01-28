@@ -9,6 +9,7 @@ import EditorJS from "@editorjs/editorjs";
 import axios from "axios";
 import { UserContext } from "../App";
 import { useParams } from "react-router-dom";
+import { uploadImage } from "../common/cloudinary";
 
 const BlogEditor = () => {
   let {
@@ -42,31 +43,13 @@ const BlogEditor = () => {
     let img = e.target.files[0];
 
     if (img) {
-      let loadingToast = toast.loading("Carregando...");
-
-      // Crie um novo objeto FormData para enviar a imagem
-      const formData = new FormData();
-      formData.append("file", img);
-      formData.append("upload_preset", "blog-banner"); // Substitua com seu upload_preset
-      formData.append("cloud_name", "dsrwye3fj");
-
-      try {
-        // Correção na linha abaixo: uso correto de template string
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/dsrwye3fj/image/upload?upload_preset=blog-banner`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-        toast.dismiss(loadingToast);
-        toast.success("Carregado");
-        const cloudData = await response.json();
-        setBlog({ ...blog, banner: cloudData.url });
-        // Restante do código para lidar com a resposta da requisição
-      } catch (error) {
-        console.error("Erro ao fazer o upload para o Cloudinary:", error);
-      }
+      uploadImage(img)
+        .then((banner) => {
+          setBlog({ ...blog, banner: banner.url });
+        })
+        .catch((err) => {
+          console.error("Erro ao fazer o upload para o Cloudinary:", error);
+        });
     }
   };
 
