@@ -47,7 +47,7 @@
 #### Frontend
 - **React.js:** Uma biblioteca JavaScript para construir interfaces de usuário.
 - **Tailwind CSS:** Um framework de estilos utilitários para construir designs modernos de forma rápida.
-- **Cloudinary:** Uma plataforma de gerenciamento de ativos de mídia que utilizei para o upload das imagens.
+- **Cloudinary:** Uma plataforma de gerenciamento de ativos de mídia que foi utilizado para o upload das imagens.
 
 #### Backend
 - **Node.js:** Um ambiente de execução JavaScript do lado do servidor.
