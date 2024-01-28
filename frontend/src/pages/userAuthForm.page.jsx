@@ -55,7 +55,7 @@ const UserAuthForm = ({ type }) => {
     }
 
     if (!email.length) {
-      return toast.error("Insira email");
+      return toast.error("Insira email válido");
     }
     if (!emailRegex.test(email)) {
       return toast.error("email invalido");
@@ -91,8 +91,8 @@ const UserAuthForm = ({ type }) => {
       <section className='h-cover flex items-center justify-center'>
         <Toaster />
         <form id='formElement' className='w-[80%] max-w-[400px]'>
-          <h1 className='text-4xl font-gelasio capitalize text-center mb-24'>
-            {type == "sign-in" ? "welcome back" : "Cadastro"}
+          <h1 className='text-4xl font-gelasio  text-center mb-24'>
+            {type == "sign-in" ? "Bem-vindo(a)" : "Cadastro"}
           </h1>
           {type != "sign-in" ? (
             <InputBox
