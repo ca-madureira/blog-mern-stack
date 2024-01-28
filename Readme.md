@@ -1,8 +1,8 @@
 # Blog MERN Fullstack 
 
-<img src="https://github.com/ca-madureira/blog-mern-stack/blob/main/frontend/src/imgs/preview.png" alt="Texto alternativo" width="850" height="450"/>
+<img src="https://github.com/ca-madureira/blog-mern-stack/blob/main/frontend/src/imgs/preview.png" alt="Texto alternativo" width="650" height="500"/>
 
-#### Funcionalidades do Projeto:
+## Funcionalidades do Projeto:
 
 1. Editor de blog com Editor JS.
 2. Autenticação Google.
