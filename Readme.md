@@ -1,7 +1,9 @@
 # Blog MERN Fullstack 
 
+<img src="https://github.com/ca-madureira/blog-mern-stack/blob/main/frontend/src/imgs/preview.png" alt="Texto alternativo" width="850" height="450"/>
 
-Os recursos do blog são:
+#### Funcionalidades do Projeto:
+
 1. Editor de blog com Editor JS.
 2. Autenticação Google.
 3. Autenticação com JWT.
@@ -15,4 +17,30 @@ Os recursos do blog são:
 11. Destaque de notificação recente separando-as das notificações antigas.
 12. O usuário também pode alterar a senha de login nas configurações.
 14. É responsivo para dispositivos móveis com design moderno + animação desbotada nas páginas.
+15. Possibilidade de alterar o tema do projeto para dark mode.
+
+## Tecnologia usadas:
+#### Frontend
+- **React.js:** Uma biblioteca JavaScript para construir interfaces de usuário.
+- **Tailwind CSS:** Um framework de estilos utilitários para construir designs modernos de forma rápida.
+
+#### Backend
+- **Node.js:** Um ambiente de execução JavaScript do lado do servidor.
+- **Express:** Um framework para construção de aplicativos web com Node.js.
+- **Mongoose:** Uma biblioteca de modelagem de objetos MongoDB para Node.js.
+- **MongoDB:** Um banco de dados NoSQL orientado a documentos.
+
+## Imagens do Projeto
+<div align="center">
+  <table>
+    <tr>
+      <td style="text-align:center;">
+        <img src="https://github.com/ca-madureira/blog-mern-stack/blob/main/frontend/src/imgs/cadastro.png" alt="Texto alternativo" width="300" height="350"/>
+      </td>
+      <td style="text-align:center;">
+        <img src="https://github.com/ca-madureira/blog-mern-stack/blob/main/frontend/src/imgs/dark-mode.png" alt="Texto alternativo" width="300" height="250"/>
+      </td>
+    </tr>
+  </table>
+</div>
 
