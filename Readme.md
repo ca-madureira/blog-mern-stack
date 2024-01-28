@@ -1,8 +1,8 @@
 # Blog MERN Fullstack 
 
 
-Os recursos deste site incluem 
-1. Editor de blog Editor JS.
+Os recursos do blog são:
+1. Editor de blog com Editor JS.
 2. Autenticação Google.
 3. Autenticação com JWT.
 4. Página de pesquisa para pesquisa de blogs e usuários.
