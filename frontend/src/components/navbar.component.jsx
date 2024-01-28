@@ -7,10 +7,12 @@ import { ThemeContext, UserContext } from "../App";
 import UserNavigationPanel from "./user-navigation.component";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { storeInSession } from "../common/session";
 
 const Navbar = () => {
   const [searchBoxVisibility, setSearchBoxVisibility] = useState(false);
   const [userNavPanel, setUserNavPanel] = useState(false);
+
   let { theme, setTheme } = useContext(ThemeContext);
   let navigate = useNavigate();
   const {
@@ -25,20 +27,29 @@ const Navbar = () => {
   } = useContext(UserContext);
 
   useEffect(() => {
-    if (access_token) {
-      axios
-        .get(import.meta.env.VITE_SERVER_DOMAIN + "/new-notification", {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        })
-        .then(({ data }) => {
-          setUserAuth({ ...userAuth, ...data });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
+    const fetchData = async () => {
+      try {
+        if (access_token) {
+          const response = await axios.get(
+            import.meta.env.VITE_SERVER_DOMAIN + "/new-notification",
+            {
+              headers: {
+                Authorization: `Bearer ${access_token}`,
+              },
+            }
+          );
+
+          setUserAuth((prevUserAuth) => ({
+            ...prevUserAuth,
+            ...response.data,
+          }));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchData();
   }, [access_token]);
 
   const handleUserNavPanel = () => {
@@ -104,7 +115,7 @@ const Navbar = () => {
           {isAdmin ? (
             <Link to='/editor' className='hidden md:flex gap-2 link'>
               <i className='fi fi-rr-file-edit'></i>
-              <p>Write</p>
+              <p>Criar</p>
             </Link>
           ) : (
             ""

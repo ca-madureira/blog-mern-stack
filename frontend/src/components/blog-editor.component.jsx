@@ -1,20 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
-import lightLogo from "../imgs/logo-light.png";
-import darkLogo from "../imgs/logo-dark.png";
 import logo from "../imgs/logo.png";
-import AnimationWrapper from "../common/page-animation";
-import lightBanner from "../imgs/blog banner light.png";
-import darkBanner from "../imgs/blog banner dark.png";
 import defaultBanner from "../imgs/blog banner.png";
-import { uploadImage } from "../common/cloudinary";
+import AnimationWrapper from "../common/page-animation";
+import { Toaster, toast } from "react-hot-toast";
+import { useContext, useEffect } from "react";
 import { EditorContext } from "../pages/editor.pages";
 import EditorJS from "@editorjs/editorjs";
-import { tools } from "./tools.component";
-import { useContext } from "react";
-import { ThemeContext } from "../App";
+import axios from "axios";
+import { UserContext } from "../App";
+import { useParams } from "react-router-dom";
 
 const BlogEditor = () => {
-  // let blogBannerRef = useRef();
   let {
     blog,
     blog: { title, banner, content, tags, des },
@@ -27,54 +23,62 @@ const BlogEditor = () => {
   let {
     userAuth: { access_token },
   } = useContext(UserContext);
-  let { theme } = useContext(ThemeContext);
   let { blog_id } = useParams();
 
   let navigate = useNavigate();
 
   useEffect(() => {
-    if (!textEditor.isReady) {
-      setTextEditor(
-        new EditorJS({
-          holderId: "textEditor",
-          data: Array.isArray(content) ? content[0] : content,
-          tools: tools,
-          placeholder: "let's write an awesome story",
-        })
-      );
-    }
-  });
-
-  const handleBannerUpload = (e) => {
+    // if (textEditor.isReady) {
+    setTextEditor(
+      new EditorJS({
+        holder: "textEditor",
+        data: Array.isArray(content) ? content[0] : content,
+        placeholder: "Escreva algo",
+      })
+    );
+    // }
+  }, []);
+  const handleBannerUpload = async (e) => {
     let img = e.target.files[0];
 
     if (img) {
       let loadingToast = toast.loading("Carregando...");
-      uploadImage(img)
-        .then((url) => {
-          if (url) {
-            toast.dismiss(loadingToast);
-            toast.success("Carregado");
-            // blogBannerRef.current.src = url;
 
-            setBlog({ ...blog, banner: url });
+      // Crie um novo objeto FormData para enviar a imagem
+      const formData = new FormData();
+      formData.append("file", img);
+      formData.append("upload_preset", "blog-banner"); // Substitua com seu upload_preset
+      formData.append("cloud_name", "dsrwye3fj");
+
+      try {
+        // Correção na linha abaixo: uso correto de template string
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/dsrwye3fj/image/upload?upload_preset=blog-banner`,
+          {
+            method: "POST",
+            body: formData,
           }
-        })
-        .catch((err) => {
-          toast.dismiss(loadingToast);
-          return toast.error(err);
-        });
+        );
+        toast.dismiss(loadingToast);
+        toast.success("Carregado");
+        const cloudData = await response.json();
+        setBlog({ ...blog, banner: cloudData.url });
+        // Restante do código para lidar com a resposta da requisição
+      } catch (error) {
+        console.error("Erro ao fazer o upload para o Cloudinary:", error);
+      }
     }
   };
 
   const handleTitleKeyDown = (e) => {
-    if (e.keyCode == 13) {
+    if (e.keyCode === 13) {
       e.preventDefault();
     }
   };
 
   const handleTitleChange = (e) => {
     let input = e.target;
+
     input.style.height = "auto";
     input.style.height = input.scrollHeight + "px";
 
@@ -83,17 +87,18 @@ const BlogEditor = () => {
 
   const handleError = (e) => {
     let img = e.target;
-    img.src = theme == "light" ? lightBanner : darkBanner;
+    img.src = defaultBanner;
   };
 
   const handlePublishEvent = () => {
     if (!banner.length) {
-      return toast.error("upload a blog banner to publish it");
+      return toast.error("carregue uma imagem");
     }
 
     if (!title.length) {
-      return toast.error("write blog title to publish it");
+      return toast.error("escreva o titulo");
     }
+
     if (textEditor.isReady) {
       textEditor
         .save()
@@ -102,7 +107,9 @@ const BlogEditor = () => {
             setBlog({ ...blog, content: data });
             setEditorState("publish");
           } else {
-            return toast.error("write something in your blog to publish it");
+            return toast.error(
+              "escreva alguma coisa em seu blog para publicar"
+            );
           }
         })
         .catch((err) => {
@@ -115,18 +122,13 @@ const BlogEditor = () => {
     if (e.target.className.includes("disable")) {
       return;
     }
+
     if (!title.length) {
-      return toast.error("write blog title before publishing");
+      return toast.error("Escreva um titulo antes de salvar");
     }
-    if (!des.length || des.length > characterLimit) {
-      return toast.error(
-        `write a description about your blog withing ${characterLimit} characteres to publish`
-      );
-    }
-    if (!tags.length) {
-      return toast.error("enter at least 1 tag to help us rank your blog");
-    }
-    let loadingToast = toast.loading("Saving draft...");
+
+    let loadingToast = toast.loading("Salvando rascunho...");
+
     e.target.classList.add("disable");
 
     if (textEditor.isReady) {
@@ -136,10 +138,10 @@ const BlogEditor = () => {
           banner,
           des,
           content,
-
           tags,
           draft: true,
         };
+
         axios
           .post(
             import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",
@@ -154,17 +156,18 @@ const BlogEditor = () => {
             e.target.classList.remove("disable");
 
             toast.dismiss(loadingToast);
-            toast.success("saved");
+            toast.success("Rascunho salvo");
 
             setTimeout(() => {
-              navigate("/dashboard/blogs?tab=draft");
+              navigate("/");
             }, 500);
           })
           .catch(({ response }) => {
             e.target.classList.remove("disable");
             toast.dismiss(loadingToast);
 
-            return toast.error(response.data.error);
+            toast.error(response.data.error);
+            return;
           });
       });
     }
@@ -173,24 +176,24 @@ const BlogEditor = () => {
     <>
       <nav className='navbar'>
         <Link to='/' className='flex-none w-10'>
-          <img src={theme == "light" ? darkLogo : lightLogo} />
+          <img src={logo} />
         </Link>
         <p className='max-md:hidden text-black line-clamp-1 w-full'>
-          {title.length ? title : "New Blog"}
+          {title.length ? title : "Novo"}
         </p>
         <div className='flex gap-4 ml-auto'>
           <button className='btn-dark py-2' onClick={handlePublishEvent}>
-            Publish
+            Publicar
           </button>
           <button className='btn-light py-2' onClick={handleSaveDraft}>
-            Save draft
+            Salvar rascunho
           </button>
         </div>
       </nav>
-
+      <Toaster />
       <AnimationWrapper>
-        <section className='w-screen min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-4'>
-          <div className='mx-auto max-w-[900px] w-full'>
+        <section>
+          <div className='max-auto max-w-[900px] w-full'>
             <div className='relative aspect-video hover:opacity-80 bg-white border-4 border-grey'>
               <label htmlFor='uploadBanner'>
                 <img src={banner} className='z-20' onError={handleError} />
@@ -205,8 +208,8 @@ const BlogEditor = () => {
             </div>
             <textarea
               defaultValue={title}
-              placeholder='Blog Title'
-              className='text-4xl font-medium w-full h-20 outline-none resize-none mt-10 leading-tight placeholder:opacity-40 bg-white'
+              placeholder='Titulo'
+              className='text-4xl font-medium w-full h-20 outline-none resize-none mt-10 leading-tight placeholder:opacity-40'
               onKeyDown={handleTitleKeyDown}
               onChange={handleTitleChange}
             ></textarea>

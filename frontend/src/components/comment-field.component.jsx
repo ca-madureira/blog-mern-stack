@@ -1,7 +1,8 @@
 import { useContext, useState } from "react";
 import { UserContext } from "../App";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import { BlogContext } from "../pages/blog.page";
+import axios from "axios";
 
 const CommentField = ({
   action,
@@ -12,10 +13,11 @@ const CommentField = ({
   let {
     blog,
     blog: {
+      title,
       _id,
       author: { _id: blog_author },
       comments,
-      comments: { results: commentArr },
+      // comments: { results: commentsArr },
       activity,
       activity: { total_comments, total_parent_comments },
     },
@@ -29,11 +31,11 @@ const CommentField = ({
 
   const handleComment = () => {
     if (!access_token) {
-      return toast.error("login first to leave a comment");
+      return toast.error("Faça login antes de comentar");
     }
 
     if (!comment.length) {
-      return toast.error("write something to leave a comment ...");
+      return toast.error("Digite seu comentário antes de publicá-lo ...");
     }
     axios
       .post(
@@ -42,7 +44,7 @@ const CommentField = ({
           _id,
           blog_author,
           comment,
-          replying_to: replyingTo,
+          // replying_to: replyingTo,
         },
         {
           headers: {
@@ -51,25 +53,16 @@ const CommentField = ({
         }
       )
       .then(({ data }) => {
+        console.log(data);
         setComment("");
         data.commented_by = {
           personal_info: { username, profile_img, fullname },
         };
         let newCommentArr;
-        if (replyingTo) {
-          commentsArr[index].children.push(data._id);
-          data.childrenLevel = commentsArr[index].childrenLevel + 1;
-          data.parentIndex = index;
-          commentsArr[index].isReplyLoaded = true;
-          commentsArr.splice(index + 1, 0, data);
-          newCommentArr = commentsArr;
-          setReplying(false);
-        } else {
-          data.childrenLevel = 0;
-          newCommentArr = [data, ...commentsArr];
-        }
+        data.childrenLevel = 0;
 
-        let parentCommentIncremental = replyingTo ? 0 : 1;
+        newCommentArr = [data];
+        let parentCommentIncrementval = 1;
         setBlog({
           ...blog,
           comments: { ...comments, results: newCommentArr },
@@ -77,12 +70,36 @@ const CommentField = ({
             ...activity,
             total_comments: total_comments + 1,
             total_parent_comments:
-              total_parent_comments + parentCommentIncremental,
+              total_parent_comments + parentCommentIncrementval,
           },
         });
+        // if (replyingTo) {
+        //   // commentsArr[index].children.push(data._id);
+        //   data.childrenLevel = commentsArr[index].childrenLevel + 1;
+        //   data.parentIndex = index;
+        //   commentsArr[index].isReplyLoaded = true;
+        //   commentsArr.splice(index + 1, 0, data);
+        //   newCommentArr = commentsArr;
+        //   setReplying(false);
+        // } else {
+        //   data.childrenLevel = 0;
+        //   newCommentArr = [data, ...commentsArr];
+        // }
+
+        // let parentCommentIncremental = replyingTo ? 0 : 1;
+        // setBlog({
+        //   ...blog,
+        //   comments: { ...comments, results: newCommentArr },
+        //   activity: {
+        //     ...activity,
+        //     total_comments: total_comments + 1,
+        //     total_parent_comments:
+        //       total_parent_comments + parentCommentIncremental,
+        //   },
+        // });
 
         setTotalParentCommentsLoaded(
-          (preVal) => preVal + parentCommentIncremental
+          (preVal) => preVal + parentCommentIncrementval
         );
       })
       .catch((err) => {
@@ -96,7 +113,7 @@ const CommentField = ({
       <textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        placeholder='Leave comment...'
+        placeholder='Escreva um comentario...'
         className='input-box pl-5 placeholder:text-dark-grey resize-none h-[150px] overflow-auto'
       ></textarea>
       <button className='btn-dark mt-5 px-10' onClick={handleComment}>
@@ -105,3 +122,5 @@ const CommentField = ({
     </>
   );
 };
+
+export default CommentField;

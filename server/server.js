@@ -9,6 +9,7 @@ import serviceAccountKey from "./blog.json" assert { type: "json" };
 import { getAuth } from "firebase-admin/auth";
 import cloudinary from "cloudinary";
 import jwt from "jsonwebtoken";
+import multer from "multer";
 
 import User from "./Schema/User.js";
 import Blog from "./Schema/Blog.js";
@@ -16,12 +17,6 @@ import Notification from "./Schema/Notification.js";
 import Comment from "./Schema/Comment.js";
 const server = express();
 let PORT = 3000;
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccountKey),
@@ -31,37 +26,69 @@ let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 let passwordRegex = /^(?=.*\d)(?=.*[a-z]).{6,20}$/;
 
+const corsOptions = {
+  origin: "http://localhost:5173", // Adapte para a sua porta local
+  optionsSuccessStatus: 200, // Algumas versões do navegador podem precisar disso
+};
+
 server.use(express.json());
-server.use(cors());
+server.use(cors(corsOptions));
 
 mongoose.connect(process.env.DB_LOCATION, {
   autoIndex: true,
 });
 
-const generateUploadURL = async () => {
-  const imageName = `${nanoid()}.jpeg`;
-  const uploadOptions = {
-    folder: "images", // Opcional: se você quiser organizar as imagens em pastas
-    public_id: imageName,
-    eager: [{ width: 400, height: 300, crop: "pad" }], // Opcional: transformações de imagem a serem aplicadas
-    tags: ["imagem"], // Opcional: tags para organização
-  };
+// const generateUploadURL = async () => {
+//   try {
+//     const imageName = `${nanoid()}.jpeg`;
+//     const uploadOptions = {
+//       folder: "images", // Opcional: se você quiser organizar as imagens em pastas
+//       public_id: imageName,
+//       eager: [{ width: 400, height: 300, crop: "pad" }], // Opcional: transformações de imagem a serem aplicadas
+//       tags: ["imagem"], // Opcional: tags para organização
+//       // access_control_allow_origin: "http://localhost:5173",
+//     };
 
-  const uploadURL = cloudinary.uploader.upload_stream(
-    uploadOptions,
-    (error, result) => {
-      if (error) {
-        throw error;
-      }
-      console.log(result);
-    }
-  );
+//     const result = await cloudinary.uploader.upload_stream(
+//       uploadOptions,
+//       (error, result) => {
+//         if (error) {
+//           throw error;
+//         }
+//         console.log(result);
+//       }
+//     );
 
-  return new Promise((resolve, reject) => {
-    uploadURL.end(); // Fecha o stream, iniciando o upload
-    resolve(cloudinary.url(imageName)); // Retorna a URL da imagem após o upload
-  });
-};
+//     // A URL da imagem pode ser obtida a partir do resultado
+//     const imgUrl = result.secure_url;
+
+//     console.log(imgUrl); // URL da imagem no Cloudinary
+//   } catch (error) {
+//     throw new Error("Erro ao gerar URL de upload no Cloudinary");
+//   }
+// };
+
+// server.get("/get-upload-url", async function (req, res) {
+//   try {
+//     // Certifique-se de fornecer a imagem na requisição (por exemplo, como um parâmetro de consulta)
+//     const { image } = req.body;
+
+//     if (!image) {
+//       return res.status(400).json({ error: "A imagem deve ser fornecida" });
+//     }
+
+//     // Realiza o upload para o Cloudinary
+//     const result = await cloudinary.uploader.upload(image, {
+//       folder: "products",
+//     });
+
+//     // Retorna a URL do upload
+//     res.json({ uploadUrl: result.secure_url });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Erro interno do servidor" });
+//   }
+// });
 
 const verifyJWT = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -106,13 +133,13 @@ const generateUsername = async (email) => {
   return username;
 };
 
-server.get("/get-upload-url", (req, res) => {
-  generateUploadURL()
-    .then((url) => res.status(200).json({ uploadURL: url }))
-    .catch((err) => {
-      return res.status(500).json({ error: err.message });
-    });
-});
+// server.get("/get-upload-url", (req, res) => {
+//   generateUploadURL()
+//     .then((url) => res.status(200).json({ uploadURL: url }))
+//     .catch((err) => {
+//       return res.status(500).json({ error: err.message });
+//     });
+// });
 
 server.post("/signup", (req, res) => {
   let { fullname, email, password } = req.body;
@@ -494,102 +521,98 @@ server.post("/update-profile", verifyJWT, (req, res) => {
 
 server.post("/create-blog", verifyJWT, (req, res) => {
   let authorId = req.user;
-  let isAdmin = req.admin;
 
-  if (isAdmin) {
-    let { title, des, banner, tags, content, draft } = req.body;
+  let { title, des, banner, tags, content, draft, id } = req.body;
 
-    if (!title.length) {
+  if (!title.length) {
+    return res
+      .status(403)
+      .json({ error: "you must provide a title to publish the blog" });
+  }
+
+  if (!draft) {
+    if (!des.length || des.length > 200) {
+      return res.status(403).json({
+        error: "you must provide blog description under 200 characters",
+      });
+    }
+
+    if (!banner.length) {
       return res
         .status(403)
-        .json({ error: "you mus provide a title to publish the blog" });
+        .json({ error: "you must provide a blog banner to publish it" });
     }
 
-    if (!draft) {
-      if (!des.length || des.length > 200) {
-        return res.status(403).json({
-          error: "you must provide blog description under 200 characters",
-        });
-      }
-      if (!banner.length) {
-        return res
-          .status(403)
-          .json({ error: "you must provide blog banner to publish it" });
-      }
-      if (!content.blocks.length) {
-        return res
-          .status(403)
-          .json({ error: "there must be some blog content to publish it" });
-      }
-      if (!tags.length || tags.length > 10) {
-        return res.status(403).json({
-          error: "provide tags in order to publish the blog, maximum 10",
-        });
-      }
+    if (!content.blocks.length) {
+      return res
+        .status(403)
+        .json({ error: "there must be some blog content to publish it" });
     }
-    tags = tags.map((tag) => tag.toLowerCase());
 
-    let blog_id =
-      id ||
-      title
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .replace(/\s+/g, "-")
-        .trim() + nanoid();
-
-    if (id) {
-      Blog.findOneAndUpdate(
-        { blog_id },
-        { title, des, banner, content, tags, draft: draft ? draft : false }
-      )
-        .then(() => {
-          return res.status(200).json({ id: blog_id });
-        })
-        .catch((err) => {
-          return res.status(500).json({ error: err.message });
-        });
-    } else {
-      let blog = new Blog({
-        title,
-        des,
-        banner,
-        content,
-        tags,
-        author: authorId,
-        blog_id,
-        draft: Boolean(draft),
+    if (!tags.length || tags.length > 10) {
+      return res.status(403).json({
+        error: "provide tags to publish the blog, maximum 10",
       });
-
-      blog
-        .save()
-        .then((blog) => {
-          let incrementVal = draft ? 0 : 1;
-
-          User.findOneAndUpdate(
-            { _id: authorId },
-            {
-              $inc: { "account_info.total_posts": incrementVal },
-              $push: { blogs: blog._id },
-            }
-          )
-            .then((user) => {
-              return res.status(200).json({ id: blog.blog_id });
-            })
-            .catch((err) => {
-              return res
-                .status(500)
-                .json({ error: "failed to update total posts number" });
-            });
-        })
-        .catch((err) => {
-          return res.status(500).json({ error: err.message });
-        });
     }
+  }
 
-    return res.json({ status: "done" });
+  tags = tags.map((tag) => tag.toLowerCase());
+
+  const blog_id =
+    id ||
+    title
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .replace(/\s+/g, "-")
+      .trim() + nanoid();
+
+  if (id) {
+    Blog.findOneAndUpdate(
+      { blog_id },
+      { title, des, banner, content, tags, draft: draft ? draft : false }
+    )
+      .then(() => {
+        return res.status(200).json({ id: blog_id });
+      })
+      .catch((err) => {
+        return res
+          .status(500)
+          .json({ error: "failed to update total posts number" });
+      });
   } else {
-    return res
-      .status(500)
-      .json({ error: "you dont have permissions to create any blog" });
+    let blog = new Blog({
+      title,
+      des,
+      banner,
+      content,
+      tags,
+      author: authorId,
+      blog_id,
+      draft: Boolean(draft),
+    });
+
+    blog
+      .save()
+      .then((blog) => {
+        const incrementVal = draft ? 0 : 1;
+
+        User.findOneAndUpdate(
+          { _id: authorId },
+          {
+            $inc: { "account_info.total_posts": incrementVal },
+            $push: { blogs: blog._id },
+          }
+        )
+          .then((user) => res.status(200).json({ id: blog.blog_id }))
+          .catch((err) => {
+            console.error(err);
+            res
+              .status(500)
+              .json({ error: "Failed to update total posts number." });
+          });
+      })
+      .catch((err) =>
+        res.status(500).json({ error: `Failed to save blog: ${err.message}` })
+      );
   }
 });
 
@@ -610,13 +633,10 @@ server.post("/get-blog", (req, res) => {
     .then((blog) => {
       User.findOneAndUpdate(
         { "personal_info.username": blog.author.personal_info.username },
-        {
-          $inc: { "account_info.total_reads": incrementVal },
-        }
+        { $inc: { "account_info.total_reads": incrementVal } }
       ).catch((err) => {
         return res.status(500).json({ error: err.message });
       });
-
       if (blog.draft && !draft) {
         return res
           .status(500)
@@ -627,6 +647,64 @@ server.post("/get-blog", (req, res) => {
     .catch((err) => {
       return res.status(500).json({ error: err.message });
     });
+});
+
+server.post("/like-blog", verifyJWT, async (req, res) => {
+  try {
+    const user_id = req.user;
+    const { _id, isLikedByUser } = req.body;
+    const incrementVal = !isLikedByUser ? 1 : -1;
+
+    const updatedBlog = await Blog.findOneAndUpdate(
+      { _id },
+      { $inc: { "activity.total_likes": incrementVal } },
+      { new: true } // Use { new: true } to return the updated document
+    );
+
+    if (!isLikedByUser) {
+      const like = new Notification({
+        type: "like",
+        blog: _id,
+        notification_for: updatedBlog.author,
+        user: user_id,
+      });
+
+      like.save().then((notification) => {
+        return res.status(200).json({ liked_by_user: true });
+      });
+    } else {
+      Notification.findOneAndDelete({
+        user: user_id,
+        blog: _id,
+        type: "like",
+      })
+        .then((data) => {
+          return res.status(200).json({ liked_by_user: false });
+        })
+        .catch((err) => {
+          return res.status(500).json({ error: err.message });
+        });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+server.post("/isliked-by-user", verifyJWT, async (req, res) => {
+  try {
+    const user_id = req.user;
+    const { _id } = req.body;
+
+    const result = await Notification.exists({
+      user: user_id,
+      type: "like",
+      blog: _id,
+    });
+
+    return res.status(200).json({ result });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 });
 
 server.post("/like-blog", verifyJWT, (req, res) => {
@@ -845,7 +923,7 @@ server.post("/delete-comment", verifyJWT, (req, res) => {
 });
 
 server.post("/update-profile-img", verifyJWT, (req, res) => {
-  let { url } = req.body;
+  let { url } = req.body.cloudData;
   User.findOneAndUpdate({ _id: req.user }, { "personal_info.profile_img": url })
     .then(() => {
       return res.status(200).json({ profile_img: url });

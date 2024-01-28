@@ -7,6 +7,8 @@ import { filterPaginationData } from "../common/filter-pagination-data";
 import InPageNavigation from "../components/inpage-navigation.component";
 import Loader from "../components/loader.component";
 import LoadMoreDataBtn from "../components/load-more.component";
+import MinimalBlogPost from "../components/nobanner-blog-post.component";
+import BlogPostCard from "../components/blog-post.component";
 
 const HomePage = () => {
   let [blogs, setBlogs] = useState(null);
@@ -34,6 +36,7 @@ const HomePage = () => {
           countRoute: "/all-latest-blogs-count",
         });
         setBlogs(formatedData);
+        return;
       })
       .catch((err) => {
         console.log(err);
@@ -141,6 +144,7 @@ const HomePage = () => {
                 return (
                   <AnimationWrapper
                     transition={{ duration: 1, delay: i * 0.1 }}
+                    key={i}
                   >
                     <MinimalBlogPost blog={blog} index={i} />
                   </AnimationWrapper>
@@ -177,7 +181,10 @@ const HomePage = () => {
             </h1>
             {trendingBlogs?.map((blog, i) => {
               return (
-                <AnimationWrapper transition={{ duration: 1, delay: i * 0.1 }}>
+                <AnimationWrapper
+                  transition={{ duration: 1, delay: i * 0.1 }}
+                  key={i}
+                >
                   <MinimalBlogPost blog={blog} index={i} />
                 </AnimationWrapper>
               );

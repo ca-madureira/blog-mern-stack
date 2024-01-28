@@ -1,40 +1,41 @@
-import { useContext } from "react";
+import { useContext, useState, createContext, useEffect } from "react";
 import { UserContext } from "../App";
-import { Navigate } from "react-router-dom";
-import BlogEditor from "../components/blog-editor.component";
+import { Navigate, useParams } from "react-router-dom";
 import PublishForm from "../components/publish-form.component";
-import { createContext } from "react";
-import { useEffect } from "react";
-import PageNotFound from "./404.page";
+import BlogEditor from "../components/blog-editor.component";
+import Loader from "../components/loader.component";
+import axios from "axios";
 
 const blogStructure = {
   title: "",
   banner: "",
-  conent: [],
+  content: [],
   tags: [],
   des: "",
   author: { personal_info: {} },
 };
-
 export const EditorContext = createContext({});
 
 const Editor = () => {
   let { blog_id } = useParams();
-  const [blog, setBlog] = useState();
+
+  const [blog, setBlog] = useState(blogStructure);
   const [editorState, setEditorState] = useState("editor");
   const [textEditor, setTextEditor] = useState({ isReady: false });
   const [loading, setLoading] = useState(true);
+
   let {
     userAuth: { access_token },
   } = useContext(UserContext);
 
+  console.log(access_token);
   useEffect(() => {
     if (!blog_id) {
       return setLoading(false);
     }
 
     axios
-      .post(import.meta.emv.VITE_SERVER_DOMAIN + "/get-blog", {
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog", {
         blog_id,
         draft: true,
         mode: "edit",
@@ -48,6 +49,7 @@ const Editor = () => {
         setLoading(false);
       });
   }, []);
+
   return (
     <EditorContext.Provider
       value={{
@@ -59,9 +61,7 @@ const Editor = () => {
         setTextEditor,
       }}
     >
-      {!isAdmin ? (
-        <Navigate to='/404' />
-      ) : access_token === null ? (
+      {access_token === null ? (
         <Navigate to='/signin' />
       ) : loading ? (
         <Loader />

@@ -36,7 +36,7 @@ const Tag = ({ tag, tagIndex }) => {
         {tag}
       </p>
       <button
-        className='mt-[2px] rounded-full absolute right-3 top-1/2 -translate-y-1/2'
+        className='mt-[2px] rounded-full absolute right-2 top-1/2 -translate-y-1/2'
         onClick={handleTagDelete}
       >
         <i className='fi fi-br-cross text-sm pointer-events-none'></i>

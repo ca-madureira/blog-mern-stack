@@ -8,7 +8,7 @@ import AnimationWrapper from "../common/page-animation";
 import Loader from "../components/loader.component";
 import InputBox from "../components/input.component";
 import { storeInSession } from "../common/session";
-import { uploadImage } from "../common/cloudinary";
+// import { uploadImage } from "../common/aws";
 
 const EditProfile = () => {
   let {
@@ -65,50 +65,175 @@ const EditProfile = () => {
     setUpdatedProfileImg(img);
   };
 
-  const handleImageUpload = (e) => {
+  // const handleImageUpload = async (e) => {
+  //   e.preventDefault();
+
+  //   if (updatedProfileImg) {
+  //     let loadingToast = toast.loading("Carregando...");
+  //     e.target.setAttribute("disabled", true);
+
+  //     // Crie um novo objeto FormData para enviar a imagem
+  //     const formData = new FormData();
+  //     formData.append("file", updatedProfileImg);
+  //     formData.append("upload_preset", "blog-banner"); // Substitua com seu upload_preset
+  //     formData.append("cloud_name", "dsrwye3fj");
+
+  //     try {
+  //       // Correção na linha abaixo: uso correto de template string
+  //       const response = await fetch(
+  //         `https://api.cloudinary.com/v1_1/dsrwye3fj/image/upload`,
+  //         {
+  //           method: "POST",
+  //           body: formData,
+  //         }
+  //       );
+  //       toast.dismiss(loadingToast);
+
+  //       const cloudData = await response.json();
+  //       axios
+  //         .post(
+  //           import.meta.env.VITE_SERVER_DOMAIN + "/update-profile-img",
+  //           { cloudData },
+  //           {
+  //             headers: {
+  //               Authorization: `Bearer ${access_token}`,
+  //             },
+  //           }
+  //         )
+  //         .then(({ data }) => {
+  //           let newUserAuth = {
+  //             ...userAuth,
+  //             profile_img: data.url,
+  //           };
+  //           storeInSession("user", JSON.stringify(newUserAuth));
+  //           setUserAuth(newUserAuth);
+
+  //           setUpdatedProfileImg(null);
+
+  //           toast.dismiss(loadingToast);
+  //           e.target.removeAttribute("disabled");
+  //           toast.success("Carregado");
+  //         })
+  //         .catch(({ response }) => {
+  //           toast.dismiss(loadingToast);
+  //           e.target.removeAttribute("disabled");
+  //           toast.error(response.data.error);
+  //         });
+
+  //       // Restante do código para lidar com a resposta da requisição
+  //     } catch (error) {
+  //       console.error("Erro no envio da imagem:", error);
+  //       toast.dismiss(loadingToast);
+  //       e.target.removeAttribute("disabled");
+  //       toast.error("Erro no upload da imagem");
+  //     }
+  //   }
+
+  //   // if (updatedProfileImg) {
+  //   //   let loadingToast = toast.loading("Uploading...");
+  //   //   e.target.setAttribute("disabled", true);
+
+  //   //   uploadImage(updatedProfileImg)
+  //   //     .then((url) => {
+  //   //       if (url) {
+  //   //         axios
+  //   //           .post(
+  //   //             import.meta.env.VITE_SERVER_DOMAIN + "/update-profile-img",
+  //   //             { url },
+  //   //             {
+  //   //               headers: {
+  //   //                 Authorization: `Bearer ${access_token}`,
+  //   //               },
+  //   //             }
+  //   //           )
+  //   //           .then(({ data }) => {
+  //   //             let newUserAuth = {
+  //   //               ...userAuth,
+  //   //               profile_img: data.profile_img,
+  //   //             };
+  //   //             storeInSession("user", JSON.stringify(newUserAuth));
+  //   //             setUserAuth(newUserAuth);
+
+  //   //             setUpdatedProfileImg(null);
+
+  //   //             toast.dismiss(loadingToast);
+  //   //             e.target.removeAttribute("disabled");
+  //   //             toast.success("Upload");
+  //   //           })
+  //   //           .catch(({ response }) => {
+  //   //             toast.dismiss(loadingToast);
+  //   //             e.target.removeAttribute("disabled");
+  //   //             toast.error(response.data.error);
+  //   //           });
+  //   //       }
+  //   //     })
+  //   //     .catch((err) => {
+  //   //       console.log(err);
+  //   //     });
+  //   // }
+  // };
+
+  const handleImageUpload = async (e) => {
     e.preventDefault();
 
     if (updatedProfileImg) {
-      let loadingToast = toast.loading("Uploading...");
+      let loadingToast = toast.loading("Carregando...");
       e.target.setAttribute("disabled", true);
 
-      uploadImage(updatedProfileImg)
-        .then((url) => {
-          if (url) {
-            axios
-              .post(
-                import.meta.env.VITE_SERVER_DOMAIN + "/update-profile-img",
-                { url },
-                {
-                  headers: {
-                    Authorization: `Bearer ${access_token}`,
-                  },
-                }
-              )
-              .then(({ data }) => {
-                let newUserAuth = {
-                  ...userAuth,
-                  profile_img: data.profile_img,
-                };
-                storeInSession("user", JSON.stringify(newUserAuth));
-                setUserAuth(newUserAuth);
+      // Crie um novo objeto FormData para enviar a imagem
+      const formData = new FormData();
+      formData.append("file", updatedProfileImg);
+      formData.append("upload_preset", "blog-banner"); // Substitua com seu upload_preset
+      formData.append("cloud_name", "dsrwye3fj");
 
-                setUpdatedProfileImg(null);
-
-                toast.dismiss(loadingToast);
-                e.target.removeAttribute("disabled");
-                toast.success("Upload");
-              })
-              .catch(({ response }) => {
-                toast.dismiss(loadingToast);
-                e.target.removeAttribute("disabled");
-                toast.error(response.data.error);
-              });
+      try {
+        // Correção na linha abaixo: uso correto de template string
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/dsrwye3fj/image/upload`,
+          {
+            method: "POST",
+            body: formData,
           }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+        );
+        toast.dismiss(loadingToast);
+
+        const cloudData = await response.json();
+
+        try {
+          // Aguarde a conclusão da requisição antes de continuar
+          console.log("cloudata", cloudData);
+          const { data } = await axios.post(
+            import.meta.env.VITE_SERVER_DOMAIN + "/update-profile-img",
+            { cloudData },
+            {
+              headers: {
+                Authorization: `Bearer ${access_token}`,
+              },
+            }
+          );
+          console.log(data.url);
+          let newUserAuth = {
+            ...userAuth,
+            profile_img: data.url,
+          };
+          storeInSession("user", JSON.stringify(newUserAuth));
+          setUserAuth(newUserAuth);
+
+          setUpdatedProfileImg(null);
+
+          toast.dismiss(loadingToast);
+          e.target.removeAttribute("disabled");
+          toast.success("Carregado");
+        } catch (error) {
+          console.error("Erro ao atualizar imagem no banco de dados:", error);
+          toast.error("Erro ao atualizar imagem no banco de dados");
+        }
+      } catch (error) {
+        console.error("Erro no envio da imagem:", error);
+        toast.dismiss(loadingToast);
+        e.target.removeAttribute("disabled");
+        toast.error("Erro no upload da imagem");
+      }
     }
   };
 
