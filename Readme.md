@@ -1,6 +1,6 @@
 # Blog MERN Fullstack 
 
-<img src="https://github.com/ca-madureira/blog-mern-stack/blob/main/frontend/src/imgs/preview.png" alt="Texto alternativo" width="750" height="350"/>
+<img src="https://github.com/ca-madureira/blog-mern-stack/blob/main/frontend/src/imgs/preview.png" alt="Texto alternativo" width="800" height="350"/>
 
 ## Funcionalidades do Projeto:
 
