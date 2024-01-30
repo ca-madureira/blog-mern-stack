@@ -220,7 +220,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
             <CommentField
               action='reply'
               index={index}
-              replyingTo={comment._id}
+              replyingTo={comment?._id}
               setReplying={setReplying}
             />
           </div>

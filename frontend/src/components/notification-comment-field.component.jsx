@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { Toaster } from "react-hot-toast";
+import { useState, useContext } from "react";
+import { Toaster, toast } from "react-hot-toast";
+import { UserContext } from "../App";
+import axios from "axios";
 
 const NotificationCommentField = ({
   _id,
@@ -24,7 +26,7 @@ const NotificationCommentField = ({
 
   const handleComment = () => {
     if (!comment.length) {
-      return toast.error("write something to leave a comment ...");
+      return toast.error("Deixe seu comentario");
     }
     axios
       .post(
@@ -58,12 +60,13 @@ const NotificationCommentField = ({
       <textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        placeholder='Leave a reply...'
+        placeholder='Deixe seu comentário'
         className='input-box pl-5 placeholder:text-dark-grey resize-none h-[150px] overflow-auto'
       ></textarea>
       <button className='btn-dark mt-5 px-10' onClick={handleComment}>
-        Reply
+        Responder
       </button>
     </>
   );
 };
+export default NotificationCommentField;
