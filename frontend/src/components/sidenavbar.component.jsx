@@ -92,7 +92,7 @@ const SideNav = () => {
                 ) : (
                   ""
                 )}{" "}
-                Notificação
+                Notificações
               </div>
             </NavLink>
             {isAdmin ? (

@@ -27,29 +27,20 @@ const Navbar = () => {
   } = useContext(UserContext);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (access_token) {
-          const response = await axios.get(
-            import.meta.env.VITE_SERVER_DOMAIN + "/new-notification",
-            {
-              headers: {
-                Authorization: `Bearer ${access_token}`,
-              },
-            }
-          );
-
-          setUserAuth((prevUserAuth) => ({
-            ...prevUserAuth,
-            ...response.data,
-          }));
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchData();
+    if (access_token) {
+      axios
+        .get(import.meta.env.VITE_SERVER_DOMAIN + "/new-notification", {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        })
+        .then(({ data }) => {
+          setUserAuth({ ...userAuth, ...data });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   }, [access_token]);
 
   const handleUserNavPanel = () => {

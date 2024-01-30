@@ -27,8 +27,8 @@ let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 let passwordRegex = /^(?=.*\d)(?=.*[a-z]).{6,20}$/;
 
 const corsOptions = {
-  origin: "http://localhost:5173", // Adapte para a sua porta local
-  optionsSuccessStatus: 200, // Algumas versões do navegador podem precisar disso
+  origin: "http://localhost:5173",
+  optionsSuccessStatus: 200,
 };
 
 server.use(express.json());
@@ -38,70 +38,25 @@ mongoose.connect(process.env.DB_LOCATION, {
   autoIndex: true,
 });
 
-// const generateUploadURL = async () => {
-//   try {
-//     const imageName = `${nanoid()}.jpeg`;
-//     const uploadOptions = {
-//       folder: "images", // Opcional: se você quiser organizar as imagens em pastas
-//       public_id: imageName,
-//       eager: [{ width: 400, height: 300, crop: "pad" }], // Opcional: transformações de imagem a serem aplicadas
-//       tags: ["imagem"], // Opcional: tags para organização
-//       // access_control_allow_origin: "http://localhost:5173",
-//     };
-
-//     const result = await cloudinary.uploader.upload_stream(
-//       uploadOptions,
-//       (error, result) => {
-//         if (error) {
-//           throw error;
-//         }
-//         console.log(result);
-//       }
-//     );
-
-//     // A URL da imagem pode ser obtida a partir do resultado
-//     const imgUrl = result.secure_url;
-
-//     console.log(imgUrl); // URL da imagem no Cloudinary
-//   } catch (error) {
-//     throw new Error("Erro ao gerar URL de upload no Cloudinary");
-//   }
-// };
-
-// server.get("/get-upload-url", async function (req, res) {
-//   try {
-//     // Certifique-se de fornecer a imagem na requisição (por exemplo, como um parâmetro de consulta)
-//     const { image } = req.body;
-
-//     if (!image) {
-//       return res.status(400).json({ error: "A imagem deve ser fornecida" });
-//     }
-
-//     // Realiza o upload para o Cloudinary
-//     const result = await cloudinary.uploader.upload(image, {
-//       folder: "products",
-//     });
-
-//     // Retorna a URL do upload
-//     res.json({ uploadUrl: result.secure_url });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Erro interno do servidor" });
-//   }
-// });
-
 const verifyJWT = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
+  console.log("Token:", token);
+
   if (token == null) {
-    return res.status(401).json({ error: "no access token" });
+    return res.status(401).json({ error: "No access token provided" });
   }
 
   jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
     if (err) {
-      return res.status(403).json({ error: "access token is invalid" });
+      console.error("JWT Verification Error:", err);
+      return res.status(403).json({ error: "Access token is invalid" });
     }
+
+    console.log("User ID:", user.id);
+    console.log("Is Admin:", user.admin);
+
     req.user = user.id;
     req.admin = user.admin;
     next();
@@ -132,14 +87,6 @@ const generateUsername = async (email) => {
   usernameExists ? (username += nanoid().substring(0, 5)) : "";
   return username;
 };
-
-// server.get("/get-upload-url", (req, res) => {
-//   generateUploadURL()
-//     .then((url) => res.status(200).json({ uploadURL: url }))
-//     .catch((err) => {
-//       return res.status(500).json({ error: err.message });
-//     });
-// });
 
 server.post("/signup", (req, res) => {
   let { fullname, email, password } = req.body;
@@ -912,12 +859,18 @@ const deleteComments = (_id) => {
 server.post("/delete-comment", verifyJWT, (req, res) => {
   let user_id = req.user;
   let { _id } = req.body;
+
+  console.log("User ID:", user_id);
+  console.log("Comment ID:", _id);
+
   Comment.findOne({ _id }).then((comment) => {
-    if (user_id == comment.comment_by || user_id == comment.blog_author) {
+    console.log("Comment:", comment);
+
+    if (user_id == comment?.commented_by || user_id == comment?.blog_author) {
       deleteComments(_id);
       return res.status(200).json({ status: "done" });
     } else {
-      return res.status(403).json({ error: "you can not delete this comment" });
+      return res.status(403).json({ error: "You cannot delete this comment" });
     }
   });
 });
@@ -954,7 +907,7 @@ server.get("/new-notification", verifyJWT, (req, res) => {
 });
 
 server.post("/notifications", verifyJWT, (req, res) => {
-  let user_id = req.id;
+  let user_id = req.user;
 
   let { page, filter, deletedDocCount } = req.body;
 
@@ -985,7 +938,7 @@ server.post("/notifications", verifyJWT, (req, res) => {
     .populate("reply", "comment")
     .sort({ createdAt: -1 })
     .select("createdAt type seen reply")
-    .then((notification) => {
+    .then((notifications) => {
       Notification.updateMany(findQuery, { seen: true })
         .skip(skipDocs)
         .limit(maxLimit)

@@ -2,6 +2,11 @@ import { useEffect, useState, useContext } from "react";
 import { UserContext } from "../App";
 import Loader from "../components/loader.component";
 import axios from "axios";
+import { filterPaginationData } from "../common/filter-pagination-data";
+import AnimationWrapper from "../common/page-animation";
+import NotificationCard from "../components/notification-card.component";
+import LoadMoreDataBtn from "../components/load-more.component";
+import NoDataMessage from "../components/nodata.component";
 
 const Notifications = () => {
   let {
@@ -47,6 +52,7 @@ const Notifications = () => {
         });
 
         setNotifications(formatedData);
+        console.log(formatedData);
       })
       .catch((err) => {
         console.log(err);
@@ -59,7 +65,7 @@ const Notifications = () => {
     }
   }, [access_token, filter]);
 
-  const handleFilter = () => {
+  const handleFilter = (e) => {
     let btn = e.target;
     setFilter(btn.innerHTML);
     setNotifications(null);
@@ -67,7 +73,7 @@ const Notifications = () => {
 
   return (
     <div>
-      <h1 className='max-md:hidden'>Recent Notification</h1>
+      <h1 className='max-md:hidden'>Notificações recentes</h1>
 
       <div className='my-8 flex gap-6'>
         {filters.map((filterName, i) => {
@@ -75,7 +81,7 @@ const Notifications = () => {
             <button
               key={i}
               className={
-                "py-2" + (filter == filterName ? "btn-dark" : "btn-light")
+                "py-2 " + (filter == filterName ? "btn-dark" : "btn-light")
               }
               onClick={handleFilter}
             >
@@ -101,7 +107,7 @@ const Notifications = () => {
               );
             })
           ) : (
-            <NoDataMessage message='Nothing available' />
+            <NoDataMessage message='Nenhuma notificação disponível' />
           )}
           <LoadMoreDataBtn
             state={notifications}
