@@ -1,6 +1,24 @@
 import { UserContext } from "../App";
+import { useState, useContext } from "react";
+import { Link } from "react-router-dom";
+import { getDay } from "../common/date";
+import axios from "axios";
 
 const BlogStats = ({ stats }) => {
+  const translateKey = (key) => {
+    switch (key) {
+      case "likes":
+        return "curtidas";
+      case "comments":
+        return "comentários";
+      case "reads":
+        return "leituras";
+
+      default:
+        return key;
+    }
+  };
+
   return (
     <div className='flex gap-2 max-lg:mb-6 max-lg:pb-6 border-grey max-lg:border-b'>
       {Object.keys(stats).map((key, i) => {
@@ -8,15 +26,15 @@ const BlogStats = ({ stats }) => {
           <div
             key={i}
             className={
-              "flex flex-col items-center w-full h-full justify-center p-4 px-6" +
-              (i != 0 ? "border-grey border-1" : "")
+              "flex flex-col items-center w-full h-full justify-center p-4 px-6 " +
+              (i != 0 ? "border-grey border-l " : "")
             }
           >
             <h1 className='text-xl lg:text-2xl mb-2'>
               {stats[key].toLocaleString()}
             </h1>
             <p className='max-lg:text-dark-grey capitalize'>
-              {key.split("_")[1]}
+              {translateKey(key.split("_")[1])}
             </p>
           </div>
         ) : (
@@ -27,14 +45,19 @@ const BlogStats = ({ stats }) => {
   );
 };
 const ManagePublishedBlogCard = ({ blog }) => {
+  let {
+    userAuth: { access_token },
+  } = useContext(UserContext);
+
   let { banner, blog_id, title, publishedAt, activity } = blog;
   let [showStat, setShowStat] = useState(false);
+
   return (
     <>
       <div className='flex gap-10 border-b mb-6 max-md:px-4 border-grey pb-6 items-center'>
         <img
           src={banner}
-          className='max-md:hidden lg:hidden xl:blovck w-28 h-28 flex-none bg-grey object-cover'
+          className='xl:blovck w-28 h-28 flex-none bg-grey object-cover'
         />
         <div className='flex flex-col justify-between py-2 w-full min-w-[300px]'>
           <div>
@@ -45,21 +68,26 @@ const ManagePublishedBlogCard = ({ blog }) => {
               {title}
             </Link>
 
-            <p className='line-clamp-1'>Published on {getDay}(publishedAt)</p>
+            <p className='line-clamp-1'>Publicado em {getDay(publishedAt)}</p>
           </div>
           <div className='flex gap-6 mt-3'>
             <Link to={`/editor/${blog_id}`} className='pr-4 py-2 underline'>
-              Edit
+              Editar
             </Link>
 
             <button
               className='lg:hidden pr-4 py-2 underline'
               onClick={() => setShowStat((preVal) => !preVal)}
             >
-              Stats
+              Estatísticas
             </button>
 
-            <button className='pr-4 py-2 underline text-red'>Delete</button>
+            <button
+              className='pr-4 py-2 underline text-red'
+              onClick={(e) => deleteBlog(blog, access_token, e.target)}
+            >
+              Apagar
+            </button>
           </div>
         </div>
 
@@ -79,7 +107,7 @@ const ManagePublishedBlogCard = ({ blog }) => {
   );
 };
 
-export const ManageDraftBlogPost = ({ blog, index }) => {
+export const ManageDraftBlogPost = ({ blog }) => {
   let { title, des, blog_id, index } = blog;
 
   let {
@@ -102,13 +130,13 @@ export const ManageDraftBlogPost = ({ blog, index }) => {
 
         <div className='flex gap-6 mt-3'>
           <Link to={`/editor/${blog_id}`} className='pr-4 py-2 underline'>
-            Edit
+            Editar
           </Link>
           <button
             className='pr-4 py-2 underline text-red'
-            onClick={() => deleteBlog(blog, access_token, e.target)}
+            onClick={(e) => deleteBlog(blog, access_token, e.target)}
           >
-            Delete
+            Apagar
           </button>
         </div>
       </div>
@@ -151,7 +179,7 @@ const deleteBlog = (blog, access_token, target) => {
         return {
           ...preVal,
           totalDocs: totalDocs - 1,
-          deleteDocCount: deleteDocCount + 1,
+          deleteDocCount: deletedDocCount + 1,
         };
       });
     })
