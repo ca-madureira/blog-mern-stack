@@ -3,6 +3,7 @@ import { BlogContext } from "../pages/blog.page";
 import AnimationWrapper from "../common/page-animation";
 import CommentField from "../components/comment-field.component";
 import CommentCard from "./comment-card.component";
+import NoDataMessage from "./nodata.component";
 export const fetchComments = async ({
   skip = 0,
   blog_id,
@@ -32,30 +33,21 @@ export const fetchComments = async ({
 };
 
 const CommentsContainer = () => {
-  // let {
-  //   blog,
-
-  //   blog: {
-  //     _id,
-  //     title,
-  //     // comments: { results: commentsArr },
-  //     // activity: { total_parent_comments },
-  //   },
-
-  //   commentsWrapper,
-  //   setCommentsWrapper,
-  //   totalParentCommentsLoaded,
-  //   setTotalParentCommentsLoaded,
-  //   setBlog,
-  // } = useContext(BlogContext);
-
   let {
+    blog,
+
     blog: {
+      _id,
       title,
-      // comments: { results: commentsArr },
+      comments: { results: commentsArr },
+      activity: { total_parent_comments },
     },
+
     commentsWrapper,
     setCommentsWrapper,
+    totalParentCommentsLoaded,
+    setTotalParentCommentsLoaded,
+    setBlog,
   } = useContext(BlogContext);
 
   const loadMoreComments = async () => {
@@ -92,7 +84,7 @@ const CommentsContainer = () => {
       </div>
       <hr className='border-grey my-8 w-[120%] -ml-10' />
       <CommentField action='comentar' />
-      {/* {commentsArr && commentsArr.length ? (
+      {commentsArr && commentsArr.length ? (
         commentsArr.map((comment, i) => {
           return (
             <AnimationWrapper key={i}>
@@ -105,18 +97,18 @@ const CommentsContainer = () => {
           );
         })
       ) : (
-        <NoDataMessage message='No comments' />
+        <NoDataMessage message='Não possui comentários ainda' />
       )}
       {total_parent_comments > totalParentCommentsLoaded ? (
         <button
           onClick={loadMoreComments}
           className='text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-md flex items-center gap-2'
         >
-          Load More
+          Carregar mais
         </button>
       ) : (
         ""
-      )} */}
+      )}
     </div>
   );
 };

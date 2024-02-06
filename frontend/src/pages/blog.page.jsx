@@ -100,7 +100,7 @@ const BlogPage = () => {
         >
           <CommentsContainer />
 
-          <div className='max-w-[900px] py-10 max-lg:px-[5vw]'>
+          <div className='max-w-[900px] py-10 max-lg:px-[5vw] ml-12'>
             <img src={banner} className='aspect-video' />
             <div className='mt-12'>
               <h2>{title}</h2>

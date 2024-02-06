@@ -17,7 +17,7 @@ const CommentField = ({
       _id,
       author: { _id: blog_author },
       comments,
-      // comments: { results: commentsArr },
+      comments: { results: commentsArr },
       activity,
       activity: { total_comments, total_parent_comments },
     },
@@ -44,7 +44,7 @@ const CommentField = ({
           _id,
           blog_author,
           comment,
-          // replying_to: replyingTo,
+          replying_to: replyingTo,
         },
         {
           headers: {
@@ -73,30 +73,30 @@ const CommentField = ({
               total_parent_comments + parentCommentIncrementval,
           },
         });
-        // if (replyingTo) {
-        //   // commentsArr[index].children.push(data._id);
-        //   data.childrenLevel = commentsArr[index].childrenLevel + 1;
-        //   data.parentIndex = index;
-        //   commentsArr[index].isReplyLoaded = true;
-        //   commentsArr.splice(index + 1, 0, data);
-        //   newCommentArr = commentsArr;
-        //   setReplying(false);
-        // } else {
-        //   data.childrenLevel = 0;
-        //   newCommentArr = [data, ...commentsArr];
-        // }
+        if (replyingTo) {
+          commentsArr[index].children.push(data._id);
+          data.childrenLevel = commentsArr[index].childrenLevel + 1;
+          data.parentIndex = index;
+          commentsArr[index].isReplyLoaded = true;
+          commentsArr.splice(index + 1, 0, data);
+          newCommentArr = commentsArr;
+          setReplying(false);
+        } else {
+          data.childrenLevel = 0;
+          newCommentArr = [data, ...commentsArr];
+        }
 
-        // let parentCommentIncremental = replyingTo ? 0 : 1;
-        // setBlog({
-        //   ...blog,
-        //   comments: { ...comments, results: newCommentArr },
-        //   activity: {
-        //     ...activity,
-        //     total_comments: total_comments + 1,
-        //     total_parent_comments:
-        //       total_parent_comments + parentCommentIncremental,
-        //   },
-        // });
+        let parentCommentIncremental = replyingTo ? 0 : 1;
+        setBlog({
+          ...blog,
+          comments: { ...comments, results: newCommentArr },
+          activity: {
+            ...activity,
+            total_comments: total_comments + 1,
+            total_parent_comments:
+              total_parent_comments + parentCommentIncremental,
+          },
+        });
 
         setTotalParentCommentsLoaded(
           (preVal) => preVal + parentCommentIncrementval

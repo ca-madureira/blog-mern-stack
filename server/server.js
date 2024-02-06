@@ -576,7 +576,10 @@ server.post("/get-blog", (req, res) => {
       "author",
       "personal_info.fullname personal_info.username personal_info.profile_img"
     )
-    .select("title des content banner activity publishedAt blog_id tags")
+    .populate("comments", "blog_id blog_author comment children  commented_by")
+    .select(
+      "title des comments content banner activity publishedAt blog_id tags"
+    )
     .then((blog) => {
       User.findOneAndUpdate(
         { "personal_info.username": blog.author.personal_info.username },
@@ -987,9 +990,23 @@ server.post("/user-written-blogs", verifyJWT, (req, res) => {
     .skip(skipDocs)
     .limit(maxLimit)
     .sort({ publishedAt: -1 })
-    .select("title banner publishedAt blog_id activity des draft -_id")
+    .select(" title banner publishedAt blog_id activity des draft -_id")
     .then((blogs) => {
       return res.status(200).json({ blogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+server.post("/user-written-blogs-count", verifyJWT, (req, res) => {
+  let user_id = req.user;
+
+  let { draft, query } = req.body;
+
+  Blog.countDocuments({ author: user_id, draft, title: new RegExp(query, "i") })
+    .then((count) => {
+      return res.status(200).json({ totalDocs: count });
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });

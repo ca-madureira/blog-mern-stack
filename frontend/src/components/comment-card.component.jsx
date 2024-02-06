@@ -1,15 +1,17 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { getDay } from "../common/date";
 import { UserContext } from "../App";
 import CommentsContainer from "./comments.component";
 import { BlogContext } from "../pages/blog.page";
+import CommentField from "./comment-field.component";
+import axios from "axios";
 
 const CommentCard = ({ index, leftVal, commentData }) => {
   let {
     commented_by: {
       personal_info: { profile_img, fullname, username: commented_by_username },
     },
-    commentAt,
+    commentedAt,
     comment,
     _id,
     children,
@@ -25,7 +27,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
       },
     },
     setBlog,
-    setTotalParentCommentLoaded,
+    setTotalParentCommentsLoaded,
   } = useContext(BlogContext);
   let {
     userAuth: { access_token, username },
@@ -152,7 +154,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         }
         className='text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-md flex items-center gap-2'
       >
-        Load more replies
+        Carregar mais respostas
       </button>
     );
 
@@ -180,7 +182,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           <p className='line-clamp-1'>
             {fullname}@{commented_by_username}
           </p>
-          <p className='min-w-fit'>{getDay(commentAt)}</p>
+          <p className='min-w-fit'>{getDay(commentedAt)}</p>
         </div>
         <p className='font-gelasio text-xl ml-5'>{comment}</p>
 
@@ -190,7 +192,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
               className='text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-md flex items-center gap-2'
               onClick={hideReplies}
             >
-              <i className='fi fi-rs-comment-dots'></i>Hide Reply
+              <i className='fi fi-rs-comment-dots'></i>Esconder resposta
             </button>
           ) : (
             <button
@@ -198,11 +200,11 @@ const CommentCard = ({ index, leftVal, commentData }) => {
               onClick={loadReplies}
             >
               <i className='fi fi-rs-comment-dots'></i>
-              {children.length} Reply
+              {children.length} Respostas
             </button>
           )}
           <button className='underline' onClick={handleReplyClick}>
-            Reply
+            Responder
           </button>
           {username == commented_by_username || username == blog_author ? (
             <button
@@ -218,7 +220,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         {isReplying ? (
           <div className='mt-8'>
             <CommentField
-              action='reply'
+              action='responder'
               index={index}
               replyingTo={comment?._id}
               setReplying={setReplying}
