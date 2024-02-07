@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import Loader from "../components/load-more.component";

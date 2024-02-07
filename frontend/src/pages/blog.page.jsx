@@ -123,7 +123,6 @@ const BlogPage = () => {
               </div>
             </div>
 
-            <BlogInteraction />
             <div className='my-12 font-gelasio blog=page-content'>
               {content[0].blocks.map((block, i) => {
                 return (
@@ -137,7 +136,7 @@ const BlogPage = () => {
             {similarBlogs != null && similarBlogs.length ? (
               <>
                 <h1 className='text-2xl mt-14 mb-10 font-medium'>
-                  Similar Blogs
+                  Outros blogs
                 </h1>
                 {similarBlogs.map((blog, i) => {
                   let {
